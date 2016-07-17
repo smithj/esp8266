@@ -39,6 +39,7 @@ WiFiClient client;
 void setup() {                
   Serial.begin(115200);
   delay(10);
+
   dht.begin();
   
   WiFi.begin(ssid, password);
@@ -48,7 +49,6 @@ void setup() {
   Serial.print("Connecting to ");
   Serial.println(ssid);
    
-  WiFi.begin(ssid, password);
    
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -56,26 +56,26 @@ void setup() {
   }
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println(WiFi.status());
   
 }
+
  
  
 void loop() {
 
-  DS18B20.requestTemperatures(); 
-  float t = DS18B20.getTempCByIndex(0);
+  float t = getTemperature();
   
   float h = 40;
-//  float t = 105;
+
   if (isnan(h) || isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
-
-    Serial.print("Temperature: ");
-    Serial.print(t);
-    Serial.print(" degrees Celcius Humidity: "); 
-    Serial.print(h);
     return;
   }
+
  
   if (client.connect(server,80)) {  //   "184.106.153.149" or api.thingspeak.com
     String postStr = apiKey;
@@ -98,7 +98,7 @@ void loop() {
  
      Serial.print("Temperature: ");
      Serial.print(t);
-     Serial.print(" degrees Celcius Humidity: "); 
+     Serial.print(" degrees Farenheight Humidity: "); 
      Serial.print(h);
      Serial.println("% send to Thingspeak");    
   }
@@ -108,3 +108,15 @@ void loop() {
   // thingspeak needs minimum 15 sec delay between updates
   delay(60000);  
 }
+
+
+float getTemperature(){
+
+   
+  DS18B20.requestTemperatures(); 
+  float t = (DS18B20.getTempCByIndex(0) * 1.8) + 32; // converted to Farenheight
+  
+   return t;
+}
+
+
